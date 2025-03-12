@@ -1,0 +1,89 @@
+networks:
+  ecommerce-network:
+
+services:
+  mysql:
+    image: mysql:8.0.41
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ecommerce
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - ecommerce-network
+
+  user-management:
+    image: user-management:latest
+    container_name: user-management
+    build:
+      context: ./Backend/userManagement
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-network
+
+  product-catalog:
+    image: product-catalog:latest
+    container_name: product-catalog
+    build:
+      context: ./Backend/productCatalog
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+    ports:
+      - "9001:9001"
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-network
+
+  epayment-cart:
+    image: epayment-cart:latest
+    container_name: epayment-cart
+    build:
+      context: ./Backend/epaymentCartService
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: mypassword
+    ports:
+      - "9002:9002"
+    depends_on:
+      - mysql
+    networks:
+      - ecommerce-network
+
+  api-gateway:
+    image: apigateway:latest
+    container_name: apigateway
+    build:
+      context: ./Backend/apiGateway
+    ports:
+      - "9003:9003"
+    networks:
+      - ecommerce-network
+
+  frontend:
+    image: frontend:latest
+    container_name: frontend
+    build:
+      context: ./Frontend/project/
+    ports:
+      - "5173:80"
+    networks:
+      - ecommerce-network
+
+volumes:
+  mysql-data:

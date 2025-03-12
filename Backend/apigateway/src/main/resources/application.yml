@@ -1,0 +1,38 @@
+server:
+  port: 9003
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+      routes:
+        - id: user-management
+          uri: http://user-management:9000
+          predicates:
+            - Path=/auth/**,/api/users/**
+        
+        - id: productCatalog
+          uri: http://product-catalog:9001
+          predicates:
+            - Path=/api/products/**
+        
+        - id: epayment-cart
+          uri: http://epayment-cart:9002
+          predicates:
+            - Path=/api/cart/**
+            
+logging:
+  level:
+    com.mic.gateway.filter: DEBUG
